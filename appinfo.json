@@ -1,0 +1,33 @@
+{
+    "appKeys": {},
+    "capabilities": [
+        ""
+    ],
+    "companyName": "kunal1gautam@gmail.com",
+    "longName": "MinimalClean",
+    "projectType": "native",
+    "resources": {
+        "media": [
+            {
+                "characterRegex": "[0-9:APMlugged%]",
+                "file": "fonts/VertigoPlusFLF-Bold.ttf",
+                "name": "FONT_VERT_16",
+                "type": "font"
+            },
+            {
+                "characterRegex": "[0-9:APM]",
+                "file": "fonts/Changeling Light.ttf",
+                "name": "FONT_CUSTOM_LIGHT_24",
+                "type": "font"
+            }
+        ]
+    },
+    "sdkVersion": "2",
+    "shortName": "MinimalClean",
+    "uuid": "1f75f5c4-c5a5-439a-93b5-fe22d1c18846",
+    "versionCode": 1,
+    "versionLabel": "1.0",
+    "watchapp": {
+        "watchface": true
+    }
+}
