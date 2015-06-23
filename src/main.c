@@ -7,6 +7,32 @@ static TextLayer *s_time_layer;   //For Text
 static GFont s_time_font;  //For custom font
 static GFont s_battery_font;
 static TextLayer *s_battery_layer;  //For battery percentage
+static BitmapLayer *s_bt_layer; //For BT connection state
+static GBitmap        *bluetooth_image; //For BT icon
+
+// Previous bluetooth connection status
+static bool prev_bt_status = false;
+
+/*
+  Handle bluetooth events
+*/
+void handle_bluetooth( bool connected ) {
+  
+  if ( bluetooth_image != NULL ) {
+    gbitmap_destroy( bluetooth_image );
+  }
+  if ( connected ) {
+    bluetooth_image = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_YES_BT);
+  } else {
+    bluetooth_image = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_NO_BT);
+ 
+  }
+
+  prev_bt_status = connected;
+
+  bitmap_layer_set_bitmap( s_bt_layer, bluetooth_image );
+}
+
 
 static void handle_battery(BatteryChargeState charge_state) {
   static char battery_text[] = "100%         ";
@@ -69,13 +95,19 @@ static void main_window_load(Window *window)
   text_layer_set_text(s_battery_layer, "100% ");
 
   
-  
   battery_state_service_subscribe(handle_battery);
 
+  //BT status layer
+    
+  GRect BT_RECT        = GRect( 0,  4,  17,  20 );
+  s_bt_layer = bitmap_layer_create(BT_RECT);
+  handle_bluetooth(bluetooth_connection_service_peek());
+  
   //update_time();
   // Add it as a child layer to the Window's root layer
   layer_add_child(window_get_root_layer(window), text_layer_get_layer(s_time_layer));
   layer_add_child(window_get_root_layer(window), text_layer_get_layer(s_battery_layer));
+  layer_add_child(window_get_root_layer(window), bitmap_layer_get_layer(s_bt_layer));
 
   handle_battery(battery_state_service_peek());
                                        
