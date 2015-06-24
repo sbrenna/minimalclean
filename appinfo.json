@@ -3,6 +3,7 @@
         "KEY_CITY": 3,
         "KEY_CONDITIONS": 0,
         "KEY_FORECASTC": 2,
+        "KEY_FORECASTT": 4,
         "KEY_TEMPERATURE": 1
     },
     "capabilities": [

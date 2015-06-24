@@ -5,6 +5,7 @@
 #define KEY_TEMPERATURE 1
 #define KEY_FORECASTC 2
 #define KEY_CITY 3
+#define KEY_FORECASTT 4
 
 static Window *s_main_window;  //For Window
 static TextLayer *s_time_layer;   //For Text 
@@ -18,7 +19,9 @@ static GBitmap   *weather_image; //For current weather
 static BitmapLayer  *s_nw_layer; //For next weather
 static GBitmap   *n_weather_image; //For next weather
 static TextLayer *s_temp_layer; //Temperature layer
+static TextLayer *s_tempf_layer; //Forecast Temperature
 static TextLayer *s_city_layer; //City layer
+static char WeatherUpdateInterval[] = "30"; //Update interval
 
 
 // Previous bluetooth connection status
@@ -64,15 +67,35 @@ static void update_time() {
 
   // Create a long-lived buffer
   static char buffer[] = "00:00";
+  static char minute[] = "00";
   
   // Write the current hours and minutes into the buffer
    
     strftime(buffer, sizeof(buffer), "%T", tick_time);
+    strftime(minute, sizeof(minute), "%M", tick_time);
     text_layer_set_text(s_time_layer,"");
   // Display this time on the TextLayer
   text_layer_set_text(s_time_layer, buffer);
   handle_battery(battery_state_service_peek());
   handle_bluetooth(bluetooth_connection_service_peek());
+  
+
+if (strcmp(minute, "00") == 0 || strcmp(minute, WeatherUpdateInterval) == 0) {
+             
+        // Begin dictionary
+        DictionaryIterator *iter;
+        app_message_outbox_begin(&iter);
+        
+        // Add a key-value pair
+        dict_write_uint8(iter, 0, 0);
+        
+        // Send the message!
+        app_message_outbox_send();
+        
+        APP_LOG(APP_LOG_LEVEL_INFO, "Weather Update requested");
+ 
+ }
+
 
 }
 
@@ -127,7 +150,7 @@ static void main_window_load(Window *window)
   bitmap_layer_set_bitmap( s_w_layer, weather_image );
   
   //Forecast
-  GRect NW_RECT = GRect(48, 148, 18, 17);
+  GRect NW_RECT = GRect(99, 148, 18, 17);
   s_nw_layer = bitmap_layer_create(NW_RECT);
   n_weather_image = gbitmap_create_with_resource(RESOURCE_ID_NA);
   bitmap_layer_set_bitmap(s_nw_layer, n_weather_image);
@@ -139,6 +162,12 @@ static void main_window_load(Window *window)
   text_layer_set_text_alignment(s_city_layer, GTextAlignmentCenter);
   text_layer_set_text(s_city_layer,"...");
   
+  //Forecast temp
+  s_tempf_layer = text_layer_create(GRect(120,148,24,24));
+  text_layer_set_text_color(s_tempf_layer,GColorBlack);
+  text_layer_set_font(s_tempf_layer,fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_VERT_16)));
+  text_layer_set_text_alignment(s_tempf_layer, GTextAlignmentRight);
+  text_layer_set_text(s_tempf_layer,"...");
   
   //update_time();
   // Add it as a child layer to the Window's root layer
@@ -149,6 +178,8 @@ static void main_window_load(Window *window)
   layer_add_child(window_get_root_layer(window), bitmap_layer_get_layer(s_w_layer));
   layer_add_child(window_get_root_layer(window), bitmap_layer_get_layer(s_nw_layer));
   layer_add_child(window_get_root_layer(window), text_layer_get_layer(s_city_layer));
+  layer_add_child(window_get_root_layer(window), text_layer_get_layer(s_tempf_layer));
+
 
   handle_battery(battery_state_service_peek());
   handle_bluetooth(bluetooth_connection_service_peek());
@@ -173,6 +204,8 @@ static void main_window_unload(Window *window)
   text_layer_destroy(s_battery_layer);
   text_layer_destroy(s_temp_layer);
   text_layer_destroy(s_city_layer);
+  text_layer_destroy(s_tempf_layer);
+
   
     // Unsubscribe from services
   tick_timer_service_unsubscribe();
@@ -203,7 +236,8 @@ static void inbox_received_callback(DictionaryIterator *iterator, void *context)
 	static char conditions_buffer[25];
   static char forecast_buffer[25];
   static char city_buffer[100];
-		APP_LOG(APP_LOG_LEVEL_INFO, "Inbox Callback received !");
+  static char tf_buffer[25];
+//		APP_LOG(APP_LOG_LEVEL_INFO, "Inbox Callback received !");
 
 	// Read first item
   Tuple *t = dict_read_first(iterator);
@@ -274,6 +308,10 @@ static void inbox_received_callback(DictionaryIterator *iterator, void *context)
       //APP_LOG(APP_LOG_LEVEL_INFO, "City is %s", city_buffer);
       
     break;
+    case KEY_FORECASTT:
+      snprintf(tf_buffer, sizeof(tf_buffer), "%d", (int)t->value->int32);
+    break;
+      
 		default:
  		 APP_LOG(APP_LOG_LEVEL_ERROR, "Key %d not recognized!", (int)t->key);
  		 break;
@@ -285,10 +323,11 @@ static void inbox_received_callback(DictionaryIterator *iterator, void *context)
 
 		text_layer_set_text(s_temp_layer, temperature_buffer);
     text_layer_set_text(s_city_layer, city_buffer);
+    text_layer_set_text(s_tempf_layer, tf_buffer);
 } 
 
 static void inbox_dropped_callback(AppMessageResult reason, void *context) {
-  APP_LOG(APP_LOG_LEVEL_ERROR, "Message dropped!");
+  APP_LOG(APP_LOG_LEVEL_ERROR, "%d", reason);
 	//text_layer_set_text(s_weather_layer, "Update Failed");
   //text_layer_set_text(s_forecast_layer, "Update Failed");
 	text_layer_set_text(s_temp_layer, "U.F.");
