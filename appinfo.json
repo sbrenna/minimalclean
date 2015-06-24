@@ -1,5 +1,10 @@
 {
-    "appKeys": {},
+    "appKeys": {
+        "KEY_CITY": 3,
+        "KEY_CONDITIONS": 0,
+        "KEY_FORECASTC": 2,
+        "KEY_TEMPERATURE": 1
+    },
     "capabilities": [
         "location"
     ],
@@ -8,6 +13,61 @@
     "projectType": "native",
     "resources": {
         "media": [
+            {
+                "file": "images/NA.png",
+                "name": "NA",
+                "type": "png"
+            },
+            {
+                "file": "images/haze.png",
+                "name": "50D",
+                "type": "png"
+            },
+            {
+                "file": "images/snow.png",
+                "name": "13D",
+                "type": "png"
+            },
+            {
+                "file": "images/storm.png",
+                "name": "11D",
+                "type": "png"
+            },
+            {
+                "file": "images/rain.png",
+                "name": "09D",
+                "type": "png"
+            },
+            {
+                "file": "images/cloudy.png",
+                "name": "04D",
+                "type": "png"
+            },
+            {
+                "file": "images/cloud.png",
+                "name": "03D",
+                "type": "png"
+            },
+            {
+                "file": "images/party_cloudy_n.png",
+                "name": "02N",
+                "type": "png"
+            },
+            {
+                "file": "images/party_cloudy.png",
+                "name": "02D",
+                "type": "png"
+            },
+            {
+                "file": "images/clear_n.png",
+                "name": "01N",
+                "type": "png"
+            },
+            {
+                "file": "images/clear.png",
+                "name": "01D",
+                "type": "png"
+            },
             {
                 "file": "images/no_bluetooth_i.png",
                 "name": "IMAGE_NO_BT",
@@ -25,7 +85,6 @@
                 "type": "font"
             },
             {
-                "characterRegex": "[0-9:APMlugged%]",
                 "file": "fonts/VertigoPlusFLF-Bold.ttf",
                 "name": "FONT_VERT_16",
                 "type": "font"
@@ -36,7 +95,7 @@
     "shortName": "MinimalClean +",
     "uuid": "1f75f5c4-c5a5-439a-93b5-fe22d1c18846",
     "versionCode": 1,
-    "versionLabel": "1.01",
+    "versionLabel": "2.00",
     "watchapp": {
         "watchface": true
     }

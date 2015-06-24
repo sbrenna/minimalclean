@@ -1,6 +1,10 @@
 
 #include <pebble.h>
 #include <pebble_fonts.h>
+#define KEY_CONDITIONS 0
+#define KEY_TEMPERATURE 1
+#define KEY_FORECASTC 2
+#define KEY_CITY 3
 
 static Window *s_main_window;  //For Window
 static TextLayer *s_time_layer;   //For Text 
@@ -9,6 +13,13 @@ static GFont s_battery_font;
 static TextLayer *s_battery_layer;  //For battery percentage
 static BitmapLayer *s_bt_layer; //For BT connection state
 static GBitmap        *bluetooth_image; //For BT icon
+static BitmapLayer  *s_w_layer; //For current weather
+static GBitmap   *weather_image; //For current weather
+static BitmapLayer  *s_nw_layer; //For next weather
+static GBitmap   *n_weather_image; //For next weather
+static TextLayer *s_temp_layer; //Temperature layer
+static TextLayer *s_city_layer; //City layer
+
 
 // Previous bluetooth connection status
 static bool prev_bt_status = false;
@@ -52,26 +63,25 @@ static void update_time() {
   struct tm *tick_time = localtime(&temp);
 
   // Create a long-lived buffer
-  static char buffer[] = "00:00AM";
+  static char buffer[] = "00:00";
   
   // Write the current hours and minutes into the buffer
    
-    strftime(buffer, sizeof("00:00AM"), "%I:%M%p", tick_time);
+    strftime(buffer, sizeof(buffer), "%T", tick_time);
     text_layer_set_text(s_time_layer,"");
   // Display this time on the TextLayer
   text_layer_set_text(s_time_layer, buffer);
   handle_battery(battery_state_service_peek());
+  handle_bluetooth(bluetooth_connection_service_peek());
 
 }
 
 
 
-
-
 static void main_window_load(Window *window) 
 {
-  Layer *window_layer = window_get_root_layer(window);
-  GRect window_bounds = layer_get_bounds(window_layer);
+  //Layer *window_layer = window_get_root_layer(window);
+  //GRect window_bounds = layer_get_bounds(window_layer);
   // Create time TextLayer
   s_time_layer = text_layer_create(GRect(0, 80, 150, 35));
   //s_battery_layer=text_layer_create(GRect(0,0,150,100));
@@ -87,7 +97,7 @@ static void main_window_load(Window *window)
   text_layer_set_font(s_time_layer, s_time_font);
   text_layer_set_text_alignment(s_time_layer, GTextAlignmentCenter);
   //Improve battery layer
-  s_battery_layer = text_layer_create(GRect(0, 4, window_bounds.size.w, 34));
+  s_battery_layer = text_layer_create(GRect(111, 4, 34, 34));
   text_layer_set_text_color(s_battery_layer, GColorBlack);
   s_battery_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_VERT_16));
   text_layer_set_font(s_battery_layer,s_battery_font);
@@ -96,21 +106,64 @@ static void main_window_load(Window *window)
 
   
   battery_state_service_subscribe(handle_battery);
+  bluetooth_connection_service_subscribe(handle_bluetooth);
 
-  //BT status layer
-    
+  //BT status layer 
   GRect BT_RECT        = GRect( 0,  4,  17,  20 );
   s_bt_layer = bitmap_layer_create(BT_RECT);
-  handle_bluetooth(bluetooth_connection_service_peek());
+
+  
+  //Temperature layer
+  s_temp_layer = text_layer_create(GRect(1, 148, 24, 24));
+  text_layer_set_text_color(s_temp_layer,GColorBlack);
+  text_layer_set_font(s_temp_layer,fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_VERT_16)));
+  text_layer_set_text_alignment(s_temp_layer, GTextAlignmentLeft);
+  text_layer_set_text(s_temp_layer,"--");
+  
+  //Current weather
+  GRect W_RECT = GRect(26, 148, 18, 17);
+  s_w_layer = bitmap_layer_create(W_RECT);
+  weather_image = gbitmap_create_with_resource(RESOURCE_ID_NA);
+  bitmap_layer_set_bitmap( s_w_layer, weather_image );
+  
+  //Forecast
+  GRect NW_RECT = GRect(48, 148, 18, 17);
+  s_nw_layer = bitmap_layer_create(NW_RECT);
+  n_weather_image = gbitmap_create_with_resource(RESOURCE_ID_NA);
+  bitmap_layer_set_bitmap(s_nw_layer, n_weather_image);
+  
+  //City
+  s_city_layer = text_layer_create(GRect(22, 4, 100, 17));
+  text_layer_set_text_color(s_city_layer,GColorBlack);
+  text_layer_set_font(s_city_layer,fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_VERT_16)));
+  text_layer_set_text_alignment(s_city_layer, GTextAlignmentCenter);
+  text_layer_set_text(s_city_layer,"...");
+  
   
   //update_time();
   // Add it as a child layer to the Window's root layer
   layer_add_child(window_get_root_layer(window), text_layer_get_layer(s_time_layer));
   layer_add_child(window_get_root_layer(window), text_layer_get_layer(s_battery_layer));
   layer_add_child(window_get_root_layer(window), bitmap_layer_get_layer(s_bt_layer));
+  layer_add_child(window_get_root_layer(window), text_layer_get_layer(s_temp_layer));
+  layer_add_child(window_get_root_layer(window), bitmap_layer_get_layer(s_w_layer));
+  layer_add_child(window_get_root_layer(window), bitmap_layer_get_layer(s_nw_layer));
+  layer_add_child(window_get_root_layer(window), text_layer_get_layer(s_city_layer));
 
   handle_battery(battery_state_service_peek());
+  handle_bluetooth(bluetooth_connection_service_peek());
                                        
+}
+
+/*
+  Destroy GBitmap and BitmapLayer
+*/
+void destroy_graphics( GBitmap *image, BitmapLayer *layer ) {
+  layer_remove_from_parent( bitmap_layer_get_layer( layer ) );
+  bitmap_layer_destroy( layer );
+  if ( image != NULL ) {
+    gbitmap_destroy( image );
+  }
 }
 
 static void main_window_unload(Window *window) 
@@ -118,11 +171,158 @@ static void main_window_unload(Window *window)
   // Destroy TextLayer
   text_layer_destroy(s_time_layer);
   text_layer_destroy(s_battery_layer);
+  text_layer_destroy(s_temp_layer);
+  text_layer_destroy(s_city_layer);
+  
+    // Unsubscribe from services
+  tick_timer_service_unsubscribe();
+  battery_state_service_unsubscribe();
+  bluetooth_connection_service_unsubscribe();
+
+  // Destroy image objects
+  destroy_graphics( bluetooth_image, s_bt_layer );
+  destroy_graphics( weather_image, s_w_layer );
+  destroy_graphics( n_weather_image, s_nw_layer);
+  
+    // Destroy font objects
+  fonts_unload_custom_font( s_time_font );
+  fonts_unload_custom_font( s_battery_font );
+  
+
 }
 static void tick_handler(struct tm *tick_time, TimeUnits units_changed) 
 {
   update_time();
 }
+
+
+// APP MESSAGE
+static void inbox_received_callback(DictionaryIterator *iterator, void *context) {
+  // Store incoming information
+	static char temperature_buffer[25];
+	static char conditions_buffer[25];
+  static char forecast_buffer[25];
+  static char city_buffer[100];
+		APP_LOG(APP_LOG_LEVEL_INFO, "Inbox Callback received !");
+
+	// Read first item
+  Tuple *t = dict_read_first(iterator);
+
+  // For all items
+  while(t != NULL) {
+		// Which key was received?
+    switch(t->key) {
+		case KEY_TEMPERATURE: 
+        snprintf(temperature_buffer,sizeof(temperature_buffer),"%d",(int)t->value->int32);
+      break;
+		case KEY_CONDITIONS:
+ 		 	snprintf(conditions_buffer, sizeof(conditions_buffer), "%s", t->value->cstring);
+     if (strcmp(conditions_buffer, "01d") == 0) {
+        weather_image = gbitmap_create_with_resource(RESOURCE_ID_01D);
+      } else if (strcmp(conditions_buffer, "01n") == 0) {
+        weather_image = gbitmap_create_with_resource(RESOURCE_ID_01N);        
+      } else if (strcmp(conditions_buffer, "02d") == 0) {
+        weather_image = gbitmap_create_with_resource(RESOURCE_ID_02D);        
+      } else if (strcmp(conditions_buffer, "02n") == 0) {
+        weather_image = gbitmap_create_with_resource(RESOURCE_ID_02N);
+      } else if (strcmp(conditions_buffer, "03d") == 0 || strcmp(conditions_buffer, "03n") == 0) {
+        weather_image = gbitmap_create_with_resource(RESOURCE_ID_03D);
+      } else if (strcmp(conditions_buffer, "04d") == 0 || strcmp(conditions_buffer, "04n") == 0) {
+       weather_image = gbitmap_create_with_resource(RESOURCE_ID_04D);
+      } else if (strcmp(conditions_buffer, "09d") == 0 || strcmp(conditions_buffer, "09n") == 0 || strcmp(conditions_buffer, "10d") == 0 || strcmp(conditions_buffer, "10n") == 0) {
+       weather_image = gbitmap_create_with_resource(RESOURCE_ID_09D);
+      } else if (strcmp(conditions_buffer, "11d") == 0 || strcmp(conditions_buffer, "11n") == 0) {
+       weather_image = gbitmap_create_with_resource(RESOURCE_ID_11D);
+      } else if (strcmp(conditions_buffer, "13d") == 0 || strcmp(conditions_buffer, "13n") == 0) {
+       weather_image = gbitmap_create_with_resource(RESOURCE_ID_13D);
+      } else if (strcmp(conditions_buffer, "50d") == 0 || strcmp(conditions_buffer, "50n") == 0) { 
+       weather_image = gbitmap_create_with_resource(RESOURCE_ID_50D);
+      } else {
+       weather_image = gbitmap_create_with_resource(RESOURCE_ID_NA);
+     }
+    bitmap_layer_set_bitmap( s_w_layer, weather_image );
+ 		break;
+    case KEY_FORECASTC:
+      snprintf(forecast_buffer, sizeof(forecast_buffer), "%s", t->value->cstring);
+     if (strcmp(forecast_buffer, "01d") == 0) {
+        n_weather_image = gbitmap_create_with_resource(RESOURCE_ID_01D);
+      } else if (strcmp(forecast_buffer, "01n") == 0) {
+        n_weather_image = gbitmap_create_with_resource(RESOURCE_ID_01N);        
+      } else if (strcmp(forecast_buffer, "02d") == 0) {
+        n_weather_image = gbitmap_create_with_resource(RESOURCE_ID_02D);        
+      } else if (strcmp(forecast_buffer, "02n") == 0) {
+        n_weather_image = gbitmap_create_with_resource(RESOURCE_ID_02N);
+      } else if (strcmp(forecast_buffer, "03d") == 0 || strcmp(forecast_buffer, "03n") == 0) {
+        n_weather_image = gbitmap_create_with_resource(RESOURCE_ID_03D);
+      } else if (strcmp(forecast_buffer, "04d") == 0 || strcmp(forecast_buffer, "04n") == 0) {
+       n_weather_image = gbitmap_create_with_resource(RESOURCE_ID_04D);
+      } else if (strcmp(forecast_buffer, "09d") == 0 || strcmp(forecast_buffer, "09n") == 0 || strcmp(forecast_buffer, "10d") == 0 || strcmp(forecast_buffer, "10n") == 0) {
+       n_weather_image = gbitmap_create_with_resource(RESOURCE_ID_09D);
+      } else if (strcmp(forecast_buffer, "11d") == 0 || strcmp(forecast_buffer, "11n") == 0) {
+       n_weather_image = gbitmap_create_with_resource(RESOURCE_ID_11D);
+      } else if (strcmp(forecast_buffer, "13d") == 0 || strcmp(forecast_buffer, "13n") == 0) {
+       n_weather_image = gbitmap_create_with_resource(RESOURCE_ID_13D);
+      } else if (strcmp(forecast_buffer, "50d") == 0 || strcmp(forecast_buffer, "50n") == 0) { 
+       n_weather_image = gbitmap_create_with_resource(RESOURCE_ID_50D);
+      } else {
+       n_weather_image = gbitmap_create_with_resource(RESOURCE_ID_NA);
+     }
+      bitmap_layer_set_bitmap(s_nw_layer, n_weather_image);
+    break;
+    case KEY_CITY:
+      snprintf(city_buffer, sizeof(city_buffer), "%s", t->value->cstring);
+      //APP_LOG(APP_LOG_LEVEL_INFO, "City is %s", city_buffer);
+      
+    break;
+		default:
+ 		 APP_LOG(APP_LOG_LEVEL_ERROR, "Key %d not recognized!", (int)t->key);
+ 		 break;
+    }
+
+    // Look for next item
+    t = dict_read_next(iterator);
+  }
+
+		text_layer_set_text(s_temp_layer, temperature_buffer);
+    text_layer_set_text(s_city_layer, city_buffer);
+} 
+
+static void inbox_dropped_callback(AppMessageResult reason, void *context) {
+  APP_LOG(APP_LOG_LEVEL_ERROR, "Message dropped!");
+	//text_layer_set_text(s_weather_layer, "Update Failed");
+  //text_layer_set_text(s_forecast_layer, "Update Failed");
+	text_layer_set_text(s_temp_layer, "U.F.");
+}
+
+static void outbox_failed_callback(DictionaryIterator *iterator, AppMessageResult reason, void *context) {
+  APP_LOG(APP_LOG_LEVEL_ERROR, "Outbox send failed!");
+	//text_layer_set_text(s_weather_layer, "Update Failed"); // No BT, Internet
+  //text_layer_set_text(s_forecast_layer, "Update Failed");
+	text_layer_set_text(s_temp_layer, "Update Failed");
+}
+
+static void outbox_sent_callback(DictionaryIterator *iterator, void *context) { // updates weather
+  APP_LOG(APP_LOG_LEVEL_INFO, "Outbox send success!");
+}
+
+//TAP HANDLER
+static void tap_handler(AccelAxisType axis, int32_t direction) {
+	APP_LOG(APP_LOG_LEVEL_INFO, "Tap/flick registered!");
+        DictionaryIterator *iter;
+        app_message_outbox_begin(&iter);
+        
+        // Add a key-value pair
+        dict_write_uint8(iter, 0, 0);
+        
+        // Send the message!
+        app_message_outbox_send();
+        
+        APP_LOG(APP_LOG_LEVEL_INFO, "Weather Update requested");
+
+}
+
+
+// INIT
 static void init() 
 {
    // Create main Window element and assign to pointer
@@ -141,13 +341,24 @@ static void init()
   // Register with TickTimerService
   tick_timer_service_subscribe(MINUTE_UNIT, tick_handler);
   
+  // Tap handler
+  accel_tap_service_subscribe(tap_handler);
   //Register with battery charge state service
+// Register callbacks
+  app_message_register_inbox_received(inbox_received_callback);
+  app_message_register_inbox_dropped(inbox_dropped_callback);
+  app_message_register_outbox_failed(outbox_failed_callback);
+  app_message_register_outbox_sent(outbox_sent_callback);
+  
+  // Open AppMessage
+  app_message_open(app_message_inbox_size_maximum(), app_message_outbox_size_maximum());
   
 
 }
 
 static void deinit() 
 {
+
   // Destroy Window
     window_destroy(s_main_window);
 }
@@ -158,3 +369,5 @@ int main(void)
   app_event_loop();
   deinit();
 }
+
+
