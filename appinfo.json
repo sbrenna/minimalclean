@@ -2,6 +2,7 @@
     "appKeys": {
         "KEY_CITY": 3,
         "KEY_CONDITIONS": 0,
+        "KEY_DESC": 5,
         "KEY_FORECASTC": 2,
         "KEY_FORECASTT": 4,
         "KEY_TEMPERATURE": 1
@@ -80,7 +81,6 @@
                 "type": "png"
             },
             {
-                "characterRegex": "[0-9:APM]",
                 "file": "fonts/Changeling Light.ttf",
                 "name": "FONT_CUSTOM_LIGHT_24",
                 "type": "font"

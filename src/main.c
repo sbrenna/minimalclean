@@ -6,6 +6,7 @@
 #define KEY_FORECASTC 2
 #define KEY_CITY 3
 #define KEY_FORECASTT 4
+#define KEY_DESC 5
 
 static Window *s_main_window;  //For Window
 static TextLayer *s_time_layer;   //For Text 
@@ -21,7 +22,9 @@ static GBitmap   *n_weather_image; //For next weather
 static TextLayer *s_temp_layer; //Temperature layer
 static TextLayer *s_tempf_layer; //Forecast Temperature
 static TextLayer *s_city_layer; //City layer
+static TextLayer *s_desc_layer; //Current weather description
 static char WeatherUpdateInterval[] = "30"; //Update interval
+static TextLayer *s_day_label; //Week day and day of the month
 
 
 // Previous bluetooth connection status
@@ -39,6 +42,9 @@ void handle_bluetooth( bool connected ) {
     bluetooth_image = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_YES_BT);
   } else {
     bluetooth_image = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_NO_BT);
+    if ( prev_bt_status != connected) {
+      vibes_short_pulse();
+    }
  
   }
 
@@ -68,14 +74,22 @@ static void update_time() {
   // Create a long-lived buffer
   static char buffer[] = "00:00";
   static char minute[] = "00";
+  static char num_buffer[4];
+  static char day_buffer[6];
+  static char date_buffer[10];
   
   // Write the current hours and minutes into the buffer
    
     strftime(buffer, sizeof(buffer), "%T", tick_time);
     strftime(minute, sizeof(minute), "%M", tick_time);
+    strftime(num_buffer, sizeof(num_buffer), "%d", tick_time);
+    strftime(day_buffer, sizeof(day_buffer), "%a", tick_time);
+    snprintf(date_buffer, sizeof(date_buffer), "%s %s", day_buffer, num_buffer);
     text_layer_set_text(s_time_layer,"");
   // Display this time on the TextLayer
   text_layer_set_text(s_time_layer, buffer);
+  text_layer_set_text(s_day_label, date_buffer);
+
   handle_battery(battery_state_service_peek());
   handle_bluetooth(bluetooth_connection_service_peek());
   
@@ -144,13 +158,13 @@ static void main_window_load(Window *window)
   text_layer_set_text(s_temp_layer,"--");
   
   //Current weather
-  GRect W_RECT = GRect(26, 148, 18, 17);
+  GRect W_RECT = GRect(20, 148, 18, 17);
   s_w_layer = bitmap_layer_create(W_RECT);
   weather_image = gbitmap_create_with_resource(RESOURCE_ID_NA);
   bitmap_layer_set_bitmap( s_w_layer, weather_image );
   
   //Forecast
-  GRect NW_RECT = GRect(99, 148, 18, 17);
+  GRect NW_RECT = GRect(105, 148, 18, 17);
   s_nw_layer = bitmap_layer_create(NW_RECT);
   n_weather_image = gbitmap_create_with_resource(RESOURCE_ID_NA);
   bitmap_layer_set_bitmap(s_nw_layer, n_weather_image);
@@ -163,11 +177,27 @@ static void main_window_load(Window *window)
   text_layer_set_text(s_city_layer,"...");
   
   //Forecast temp
-  s_tempf_layer = text_layer_create(GRect(120,148,24,24));
+  s_tempf_layer = text_layer_create(GRect(122,148,21,24));
   text_layer_set_text_color(s_tempf_layer,GColorBlack);
   text_layer_set_font(s_tempf_layer,fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_VERT_16)));
   text_layer_set_text_alignment(s_tempf_layer, GTextAlignmentRight);
   text_layer_set_text(s_tempf_layer,"...");
+  
+  //Current weather desc
+  s_desc_layer = text_layer_create(GRect(45,148,56,24));
+  text_layer_set_text_color(s_desc_layer,GColorBlack);
+  text_layer_set_font(s_desc_layer,fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_VERT_16)));
+  text_layer_set_text_alignment(s_desc_layer, GTextAlignmentCenter);
+  text_layer_set_text(s_desc_layer,"...");
+  
+  //Day
+  s_day_label = text_layer_create(GRect(0,40,150,35));
+  text_layer_set_text_color(s_day_label,GColorBlack);
+  //resource_get_handle(RESOURCE_ID_FONT_CUSTOM_LIGHT_24)
+  text_layer_set_font(s_day_label,fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_CUSTOM_LIGHT_24)));
+  text_layer_set_text_alignment(s_day_label, GTextAlignmentCenter);
+  text_layer_set_text(s_day_label,"...");
+
   
   //update_time();
   // Add it as a child layer to the Window's root layer
@@ -179,6 +209,8 @@ static void main_window_load(Window *window)
   layer_add_child(window_get_root_layer(window), bitmap_layer_get_layer(s_nw_layer));
   layer_add_child(window_get_root_layer(window), text_layer_get_layer(s_city_layer));
   layer_add_child(window_get_root_layer(window), text_layer_get_layer(s_tempf_layer));
+  layer_add_child(window_get_root_layer(window), text_layer_get_layer(s_desc_layer));
+  layer_add_child(window_get_root_layer(window), text_layer_get_layer(s_day_label));
 
 
   handle_battery(battery_state_service_peek());
@@ -205,6 +237,8 @@ static void main_window_unload(Window *window)
   text_layer_destroy(s_temp_layer);
   text_layer_destroy(s_city_layer);
   text_layer_destroy(s_tempf_layer);
+  text_layer_destroy(s_desc_layer);
+  text_layer_destroy(s_day_label);
 
   
     // Unsubscribe from services
@@ -237,6 +271,8 @@ static void inbox_received_callback(DictionaryIterator *iterator, void *context)
   static char forecast_buffer[25];
   static char city_buffer[100];
   static char tf_buffer[25];
+  static char desc_buffer[100];
+  
 //		APP_LOG(APP_LOG_LEVEL_INFO, "Inbox Callback received !");
 
 	// Read first item
@@ -311,7 +347,9 @@ static void inbox_received_callback(DictionaryIterator *iterator, void *context)
     case KEY_FORECASTT:
       snprintf(tf_buffer, sizeof(tf_buffer), "%d", (int)t->value->int32);
     break;
-      
+    case KEY_DESC:
+      snprintf(desc_buffer, sizeof(desc_buffer), "%s", t->value->cstring);
+    break;
 		default:
  		 APP_LOG(APP_LOG_LEVEL_ERROR, "Key %d not recognized!", (int)t->key);
  		 break;
@@ -324,6 +362,7 @@ static void inbox_received_callback(DictionaryIterator *iterator, void *context)
 		text_layer_set_text(s_temp_layer, temperature_buffer);
     text_layer_set_text(s_city_layer, city_buffer);
     text_layer_set_text(s_tempf_layer, tf_buffer);
+    text_layer_set_text(s_desc_layer, desc_buffer);
 } 
 
 static void inbox_dropped_callback(AppMessageResult reason, void *context) {

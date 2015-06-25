@@ -12,6 +12,7 @@ var forecasttemp = "Upd";
 var temperature = "Upd";
 var conditions = "Upd";
 var city = "Upd";
+var text = "Upd";
 
 function locationSuccess(pos) {  
   var urlf = 'http://api.openweathermap.org/data/2.5/forecast?Lat='+pos.coords.latitude +'&Lon=' + pos.coords.longitude +'&units=metric&mode=json';
@@ -41,7 +42,10 @@ function locationSuccess(pos) {
 			// Conditions
       conditions = json.weather[0].icon;
       console.log("Conditions are " + conditions);
-            
+      
+      text = json.weather[0].description;
+      console.log("Text is " + text);
+      
       xhrRequest(urlf, 'GET',
         function(responseText) {   
           var json = JSON.parse(responseText);
@@ -57,7 +61,8 @@ function locationSuccess(pos) {
           "KEY_CONDITIONS": conditions,
           "KEY_FORECASTC": forecast,
           "KEY_CITY": city,
-	  			"KEY_FORECASTT": forecasttemp,
+          "KEY_FORECASTT": forecasttemp,
+          "KEY_DESC": text,
         };
 
         // Send to Pebble
@@ -83,7 +88,7 @@ function getWeather() {
   navigator.geolocation.getCurrentPosition(
     locationSuccess,
     locationError,
-    {timeout: 15000, maximumAge: 60000}
+    {timeout: 15000, maximumAge: 30000}
   );
 }
 
