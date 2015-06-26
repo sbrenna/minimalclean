@@ -82,6 +82,11 @@
             },
             {
                 "file": "fonts/Changeling Light.ttf",
+                "name": "FONT_CUSTOM_LIGHT_20",
+                "type": "font"
+            },
+            {
+                "file": "fonts/Changeling Light.ttf",
                 "name": "FONT_CUSTOM_LIGHT_24",
                 "type": "font"
             },
