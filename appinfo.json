@@ -16,6 +16,16 @@
     "resources": {
         "media": [
             {
+                "file": "fonts/pirulen rg.ttf",
+                "name": "FONT_PIR_LIGHT_20",
+                "type": "font"
+            },
+            {
+                "file": "fonts/pirulen rg.ttf",
+                "name": "FONT_PIR_24",
+                "type": "font"
+            },
+            {
                 "file": "images/NA.png",
                 "name": "NA",
                 "type": "png"
@@ -82,12 +92,12 @@
             },
             {
                 "file": "fonts/Changeling Light.ttf",
-                "name": "FONT_CUSTOM_LIGHT_20",
+                "name": "FONT_CUSTOM_LIGHT_24",
                 "type": "font"
             },
             {
                 "file": "fonts/Changeling Light.ttf",
-                "name": "FONT_CUSTOM_LIGHT_24",
+                "name": "FONT_CUSTOM_LIGHT_20",
                 "type": "font"
             },
             {

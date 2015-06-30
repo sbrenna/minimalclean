@@ -134,7 +134,8 @@ static void main_window_load(Window *window)
 
   
   // Improve the layout to be more like a watchface
-  s_time_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_CUSTOM_LIGHT_24));
+ // s_time_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_CUSTOM_LIGHT_24));
+  s_time_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_PIR_24));
   text_layer_set_font(s_time_layer, s_time_font);
   text_layer_set_text_alignment(s_time_layer, GTextAlignmentCenter);
   //Improve battery layer
@@ -195,7 +196,7 @@ static void main_window_load(Window *window)
   text_layer_set_text(s_desc_layer,"...");
   
   //Day
-  s_day_label = text_layer_create(GRect(0,50,150,20));
+  s_day_label = text_layer_create(GRect(0,46,150,20));
   text_layer_set_text_color(s_day_label,GColorBlack);
   text_layer_set_font(s_day_label,fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_CUSTOM_LIGHT_20)));
   text_layer_set_text_alignment(s_day_label, GTextAlignmentCenter);
