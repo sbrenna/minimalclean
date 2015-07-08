@@ -189,7 +189,7 @@ static void main_window_load(Window *window)
   text_layer_set_text(s_tempf_layer,"...");
   
   //Current weather desc
-  s_desc_layer = text_layer_create(GRect(45,148,56,24));
+  s_desc_layer = text_layer_create(GRect(0, 120, 150, 25));
   text_layer_set_text_color(s_desc_layer,GColorBlack);
   text_layer_set_font(s_desc_layer,fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_VERT_16)));
   text_layer_set_text_alignment(s_desc_layer, GTextAlignmentCenter);
