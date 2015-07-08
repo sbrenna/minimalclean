@@ -163,13 +163,13 @@ static void main_window_load(Window *window)
   text_layer_set_text(s_temp_layer,"--");
   
   //Current weather
-  GRect W_RECT = GRect(20, 148, 18, 17);
+  GRect W_RECT = GRect(20, 148, 20, 17);
   s_w_layer = bitmap_layer_create(W_RECT);
   weather_image = gbitmap_create_with_resource(RESOURCE_ID_NA);
   bitmap_layer_set_bitmap( s_w_layer, weather_image );
   
   //Forecast
-  GRect NW_RECT = GRect(105, 148, 18, 17);
+  GRect NW_RECT = GRect(103, 148, 20, 17);
   s_nw_layer = bitmap_layer_create(NW_RECT);
   n_weather_image = gbitmap_create_with_resource(RESOURCE_ID_NA);
   bitmap_layer_set_bitmap(s_nw_layer, n_weather_image);
