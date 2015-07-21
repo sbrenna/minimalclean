@@ -139,7 +139,7 @@ static void main_window_load(Window *window)
   text_layer_set_font(s_time_layer, s_time_font);
   text_layer_set_text_alignment(s_time_layer, GTextAlignmentCenter);
   //Improve battery layer
-  s_battery_layer = text_layer_create(GRect(111, 4, 34, 17));
+  s_battery_layer = text_layer_create(GRect(111, 4, 36, 17));
   text_layer_set_text_color(s_battery_layer, GColorBlack);
   s_battery_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_VERT_16));
   text_layer_set_font(s_battery_layer,s_battery_font);
@@ -175,7 +175,7 @@ static void main_window_load(Window *window)
   bitmap_layer_set_bitmap(s_nw_layer, n_weather_image);
   
   //City
-  s_city_layer = text_layer_create(GRect(22, 4, 100, 17));
+  s_city_layer = text_layer_create(GRect(22, 4, 98, 17));
   text_layer_set_text_color(s_city_layer,GColorBlack);
   text_layer_set_font(s_city_layer,fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_VERT_16)));
   text_layer_set_text_alignment(s_city_layer, GTextAlignmentCenter);
@@ -281,7 +281,14 @@ static void inbox_received_callback(DictionaryIterator *iterator, void *context)
 
 	// Read first item
   Tuple *t = dict_read_first(iterator);
-
+// Destroy previous icons
+  
+    if ( weather_image != NULL ) {
+    gbitmap_destroy( weather_image );
+  }
+    if ( n_weather_image != NULL ) {
+    gbitmap_destroy( n_weather_image );
+  }
   // For all items
   while(t != NULL) {
 		// Which key was received?

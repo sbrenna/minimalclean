@@ -109,9 +109,9 @@
     },
     "sdkVersion": "2",
     "shortName": "MinimalClean +",
-    "uuid": "1f75f5c4-c5a5-439a-93b5-fe22d1c18846",
+    "uuid": "dbbd2cec-e48e-4adb-b2f1-138d229bb021",
     "versionCode": 1,
-    "versionLabel": "2.00",
+    "versionLabel": "3.00",
     "watchapp": {
         "watchface": true
     }
