@@ -15,8 +15,8 @@ var city = "Upd";
 var text = "Upd";
 
 function locationSuccess(pos) {  
-  var urlf = 'http://api.openweathermap.org/data/2.5/forecast?Lat='+pos.coords.latitude +'&Lon=' + pos.coords.longitude +'&units=metric&mode=json';
-  var url = 'http://api.openweathermap.org/data/2.5/weather?Lat='+pos.coords.latitude +'&Lon=' + pos.coords.longitude +'&units=metric&mode=json';
+  var urlf = 'http://api.openweathermap.org/data/2.5/forecast?Lat='+pos.coords.latitude +'&Lon=' + pos.coords.longitude +'&units=metric&mode=json&APPID=38c8da0e62b8ef98c45e1e3436950da8';
+  var url = 'http://api.openweathermap.org/data/2.5/weather?Lat='+pos.coords.latitude +'&Lon=' + pos.coords.longitude +'&units=metric&mode=json&APPID=38c8da0e62b8ef98c45e1e3436950da8';
   
 	console.log("Lat is " + pos.coords.latitude);
 	console.log("Lon is " + pos.coords.longitude);

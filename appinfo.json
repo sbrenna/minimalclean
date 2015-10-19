@@ -16,23 +16,8 @@
     "resources": {
         "media": [
             {
-                "file": "fonts/pirulen rg.ttf",
-                "name": "FONT_PIR_LIGHT_20",
-                "type": "font"
-            },
-            {
-                "file": "fonts/pirulen rg.ttf",
-                "name": "FONT_PIR_24",
-                "type": "font"
-            },
-            {
-                "file": "images/NA.png",
-                "name": "NA",
-                "type": "png"
-            },
-            {
-                "file": "images/haze.png",
-                "name": "50D",
+                "file": "images/storm.png",
+                "name": "11D",
                 "type": "png"
             },
             {
@@ -41,23 +26,8 @@
                 "type": "png"
             },
             {
-                "file": "images/storm.png",
-                "name": "11D",
-                "type": "png"
-            },
-            {
                 "file": "images/rain.png",
                 "name": "09D",
-                "type": "png"
-            },
-            {
-                "file": "images/cloudy.png",
-                "name": "04D",
-                "type": "png"
-            },
-            {
-                "file": "images/cloud.png",
-                "name": "03D",
                 "type": "png"
             },
             {
@@ -71,6 +41,26 @@
                 "type": "png"
             },
             {
+                "file": "images/no_bluetooth_i.png",
+                "name": "IMAGE_NO_BT",
+                "type": "png"
+            },
+            {
+                "file": "images/haze.png",
+                "name": "50D",
+                "type": "png"
+            },
+            {
+                "file": "images/cloudy.png",
+                "name": "04D",
+                "type": "png"
+            },
+            {
+                "file": "images/cloud.png",
+                "name": "03D",
+                "type": "png"
+            },
+            {
                 "file": "images/clear_n.png",
                 "name": "01N",
                 "type": "png"
@@ -81,18 +71,28 @@
                 "type": "png"
             },
             {
-                "file": "images/no_bluetooth_i.png",
-                "name": "IMAGE_NO_BT",
-                "type": "png"
-            },
-            {
                 "file": "images/bluetooth_i.png",
                 "name": "IMAGE_YES_BT",
                 "type": "png"
             },
             {
-                "file": "fonts/Changeling Light.ttf",
-                "name": "FONT_CUSTOM_LIGHT_24",
+                "file": "images/NA.png",
+                "name": "NA",
+                "type": "png"
+            },
+            {
+                "file": "fonts/pirulen rg.ttf",
+                "name": "FONT_PIR_24",
+                "type": "font"
+            },
+            {
+                "file": "fonts/pirulen rg.ttf",
+                "name": "FONT_PIR_LIGHT_20",
+                "type": "font"
+            },
+            {
+                "file": "fonts/VertigoPlusFLF-Bold.ttf",
+                "name": "FONT_VERT_16",
                 "type": "font"
             },
             {
@@ -101,8 +101,8 @@
                 "type": "font"
             },
             {
-                "file": "fonts/VertigoPlusFLF-Bold.ttf",
-                "name": "FONT_VERT_16",
+                "file": "fonts/Changeling Light.ttf",
+                "name": "FONT_CUSTOM_LIGHT_24",
                 "type": "font"
             }
         ]
